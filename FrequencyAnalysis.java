@@ -1,23 +1,42 @@
-/******************************************************************************
-
-                            Online Java Compiler.
-                Code, Compile, Run and Debug java program online.
-Write your code in this editor and press "Run" button to execute it.
-
-*******************************************************************************/
-
-
 import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class FrequencyAnalysis {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Введіть текст для аналізу:");
-        String text = scanner.nextLine();
-        scanner.close();
+        System.out.println("Виберіть опцію: 1 - ввести текст з консолі, 2 - зчитати текст з файлу");
+        int option = scanner.nextInt();
+        scanner.nextLine(); 
+        String text = "";
+
+        switch (option) {
+            case 1:
+                System.out.println("Введіть текст для аналізу:");
+                text = scanner.nextLine();
+                break;
+            case 2:
+                System.out.println("Введіть шлях до файлу для аналізу:");
+                String filePath = scanner.nextLine();
+                try {
+                    File file = new File(filePath);
+                    scanner = new Scanner(file);
+                    while (scanner.hasNextLine()) {
+                        text += scanner.nextLine();
+                    }
+                    scanner.close();
+                } catch (FileNotFoundException e) {
+                    System.out.println("Файл не знайдено");
+                    e.printStackTrace();
+                }
+                break;
+            default:
+                System.out.println("Невірний вибір. Будь ласка, виберіть 1 або 2.");
+                System.exit(0);
+        }
 
         text = text.replaceAll("[^а-яА-Я]", "").toLowerCase();
 
