@@ -1,58 +1,93 @@
-import java.util.Scanner;
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
-public class FrequencyAnalysis {
+public class FrequencyAnalysisGUI {
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Виберіть опцію: 1 - ввести текст з консолі, 2 - зчитати текст з файлу");
-        int option = scanner.nextInt();
-        scanner.nextLine(); 
-        String text = "";
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Frequency Analysis");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(600, 400);
 
-        switch (option) {
-            case 1:
-                System.out.println("Введіть текст для аналізу:");
-                text = scanner.nextLine();
-                break;
-            case 2:
-                System.out.println("Введіть шлях до файлу для аналізу:");
-                String filePath = scanner.nextLine();
-                try {
-                    File file = new File(filePath);
-                    scanner = new Scanner(file);
-                    while (scanner.hasNextLine()) {
-                        text += scanner.nextLine();
+            JTextArea inputArea = new JTextArea(10, 40);
+            JTextArea outputArea = new JTextArea(10, 40);
+            outputArea.setEditable(false);
+
+            JButton button = new JButton("Choose File");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JFileChooser fileChooser = new JFileChooser();
+                    int returnValue = fileChooser.showOpenDialog(null);
+                    if (returnValue == JFileChooser.APPROVE_OPTION) {
+                        File selectedFile = fileChooser.getSelectedFile();
+                        performFrequencyAnalysis(selectedFile, outputArea);
                     }
-                    scanner.close();
-                } catch (FileNotFoundException e) {
-                    System.out.println("Файл не знайдено");
-                    e.printStackTrace();
                 }
-                break;
-            default:
-                System.out.println("Невірний вибір. Будь ласка, виберіть 1 або 2.");
-                System.exit(0);
+            });
+
+            JButton button2 = new JButton("Analyze Text");
+            button2.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String text = inputArea.getText();
+                    performFrequencyAnalysis(text, outputArea);
+                }
+            });
+
+            JPanel panel = new JPanel();
+            panel.add(button);
+            panel.add(button2);
+            panel.add(new JScrollPane(inputArea));
+            panel.add(new JScrollPane(outputArea));
+            frame.getContentPane().add(panel, BorderLayout.CENTER);
+
+            frame.setVisible(true);
+        });
+    }
+
+    private static void performFrequencyAnalysis(File file, JTextArea outputArea) {
+        String text = "";
+        try {
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                text += scanner.nextLine();
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Файл не знайдено");
+            e.printStackTrace();
         }
 
+        performFrequencyAnalysis(text, outputArea);
+    }
+
+    private static void performFrequencyAnalysis(String text, JTextArea outputArea) {
         text = text.replaceAll("[^а-яА-Я]", "").toLowerCase();
 
         Map<Character, Integer> charFrequencies = calculateCharFrequencies(text);
 
         Map<String, Integer> bigramFrequencies = calculateBigramFrequencies(text);
 
-        System.out.println("Частоти символів:");
+        StringBuilder output = new StringBuilder();
+        output.append("Частоти символів:\n");
         for (Map.Entry<Character, Integer> entry : charFrequencies.entrySet()) {
-            System.out.println(entry.getKey() + ": " + (double) entry.getValue() / text.length());
+            output.append(entry.getKey() + ": " + (double) entry.getValue() / text.length() + "\n");
         }
 
-        System.out.println("Частоти біграм:");
+        output.append("Частоти біграм:\n");
         for (Map.Entry<String, Integer> entry : bigramFrequencies.entrySet()) {
-            System.out.println(entry.getKey() + ": " + (double) entry.getValue() / (text.length() - 1));
+            output.append(entry.getKey() + ": " + (double) entry.getValue() / (text.length() - 1) + "\n");
         }
+
+        outputArea.setText(output.toString());
     }
 
     private static Map<Character, Integer> calculateCharFrequencies(String text) {
@@ -72,4 +107,3 @@ public class FrequencyAnalysis {
         return frequencies;
     }
 }
-
